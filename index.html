@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#2b0f63">
+<title>پیتزا کسری | بازی کسر و عدد مخلوط</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --purple:#4a1a9c;
+  --c-whole:#059669;   /* سبز زمردی ویژه عدد صحیح / خارج قسمت */
+  --c-num:#e11d48;     /* قرمز یاقوتی ویژه صورت / باقیمانده */
+  --c-den:#2563eb;     /* آبی لاجوردی ویژه مخرج / مقسوم‌علیه */
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:manipulation;
+  font-family:"Vazirmatn","Vazir","IRANSans",Tahoma,"Segoe UI",system-ui,sans-serif;color:#fff;background:#2b0f63}
+body{background:radial-gradient(circle at 15% 8%,#7b2ff7 0,transparent 46%),radial-gradient(circle at 88% 92%,#ff5d8f 0,transparent 46%),linear-gradient(160deg,#2b0f63,#4a1a9c 55%,#7a1fa2)}
+button,input{font-family:inherit}
+button{cursor:pointer}
+
+/* background floaters */
+.bg{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.bg span{position:absolute;bottom:-70px;font-weight:900;opacity:.17;animation:floatUp linear infinite}
+@keyframes floatUp{to{transform:translateY(-120vh) rotate(360deg)}}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:50}
+
+/* screens */
+.screen{position:absolute;inset:0;z-index:1;display:none;flex-direction:column;align-items:center;overflow-y:auto;overflow-x:hidden;
+  padding:max(12px,env(safe-area-inset-top)) 14px max(20px,env(safe-area-inset-bottom))}
+.screen.active{display:flex;animation:scr .35s ease}
+@keyframes scr{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.wrap{width:100%;max-width:460px;margin:auto 0;display:flex;flex-direction:column;align-items:center;gap:10px}
+
+/* buttons */
+.btn{--b1:#ff7aa8;--b2:#ff3d77;--sh:#b8184d;border:0;border-radius:22px;padding:12px 16px;color:#fff;font-weight:900;font-size:.98rem;
+  background:linear-gradient(var(--b1),var(--b2));box-shadow:0 6px 0 var(--sh),0 12px 20px rgba(0,0,0,.28);transition:transform .08s,box-shadow .08s;text-shadow:0 2px 0 rgba(0,0,0,.18)}
+.btn:active{transform:translateY(5px);box-shadow:0 1px 0 var(--sh),0 4px 8px rgba(0,0,0,.28)}
+.btn.green{--b1:#5be584;--b2:#1fb85a;--sh:#11823e}
+.btn.yellow{--b1:#ffe066;--b2:#ffa620;--sh:#c26f00;color:#4a2b00;text-shadow:none}
+.btn.blue{--b1:#6ec6ff;--b2:#2f7bff;--sh:#1647b8}
+.btn.purple{--b1:#b388ff;--b2:#7b3fe4;--sh:#4c1fa0}
+.btn.big{width:100%;display:flex;align-items:center;gap:12px;font-size:1.05rem;padding:12px 15px;text-align:right;position:relative}
+.btn.big .ic{font-size:1.9rem;filter:drop-shadow(0 3px 0 rgba(0,0,0,.2))}
+.btn.big .tx{flex:1;display:flex;flex-direction:column;gap:2px}
+.btn.big .tx small{font-weight:700;opacity:.95;font-size:.8rem;display:flex;align-items:center;gap:6px;direction:ltr;justify-content:flex-end}
+.btn.big .go{font-size:1.15rem;opacity:.85}
+.btn.center{justify-content:center;text-align:center}
+.btn:disabled{opacity:.5;pointer-events:none}
+.btn.locked{--b1:#94a3b8;--b2:#64748b;--sh:#334155;opacity:.88}
+.btn.rec-ring{outline:3.5px solid #ffe066;box-shadow:0 6px 0 var(--sh),0 0 18px rgba(255,224,102,.75)}
+.rec-badge{position:absolute;top:-10px;left:12px;background:#ffe066;color:#4a2b00;font-size:.7rem;font-weight:900;padding:2px 8px;border-radius:99px;border:2px solid #fff;box-shadow:0 3px 6px rgba(0,0,0,.25);animation:bob 1.2s infinite}
+
+.iconbtn{width:42px;height:42px;border-radius:14px;border:0;background:rgba(255,255,255,.18);color:#fff;font-size:1.15rem;font-weight:900;
+  box-shadow:0 4px 0 rgba(0,0,0,.2);transition:transform .08s}
+.iconbtn:active{transform:translateY(3px);box-shadow:none}
+.iconbtn.off{opacity:.45}
+
+/* home & adventure card */
+.logo{margin:0;font-size:2.35rem;font-weight:900;line-height:1.15;background:linear-gradient(90deg,#ffe066,#ff9f1c,#ff5d8f,#ffe066);background-size:200% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite;filter:drop-shadow(0 4px 0 rgba(0,0,0,.25))}
+@keyframes shine{to{background-position:-200% 0}}
+.tag{margin:0;font-weight:700;opacity:.95;text-align:center;font-size:.88rem}
+.designer-pill{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:4px 14px;border-radius:99px;
+  background:linear-gradient(90deg,#fde047,#fef08a,#f59e0b);color:#3b0764;font-weight:900;font-size:.8rem;
+  border:2px solid #fff;box-shadow:0 3px 0 #b45309,0 6px 14px rgba(251,191,36,.4)}
+.hrow{width:100%;display:flex;justify-content:space-between;align-items:center}
+.stars-total{background:rgba(0,0,0,.28);border-radius:16px;padding:7px 13px;font-weight:900;font-size:.88rem;border:1.5px solid rgba(255,255,255,.2)}
+.big-mascot svg{width:118px;height:auto;filter:drop-shadow(0 10px 12px rgba(0,0,0,.3))}
+.row{display:flex;gap:10px;width:100%}
+.row .btn{flex:1}
+
+.home-card{width:100%;background:rgba(255,255,255,.96);color:#29125a;border-radius:24px;padding:12px;
+  box-shadow:0 8px 0 rgba(15,5,45,.35),0 16px 28px rgba(0,0,0,.3);border:2px solid rgba(255,255,255,.85);
+  display:flex;flex-direction:column;gap:9px}
+.name-label{font-size:.8rem;font-weight:900;color:#4a1a9c;text-align:center;display:block;margin-bottom:4px}
+.name-inp{width:100%;border-radius:14px;border:2.5px solid #c084fc;background:#faf5ff;padding:8px 12px;
+  text-align:center;font-weight:900;font-size:1rem;color:#2e1065;outline:none;-webkit-user-select:text;user-select:text}
+.name-inp:focus{border-color:#f59e0b;background:#fff}
+.sec-note{font-size:.76rem;font-weight:900;color:#581c87;text-align:center;margin:2px 0 0}
+.rec-banner{border-radius:14px;padding:7px 10px;font-size:.76rem;font-weight:900;text-align:center;line-height:1.5}
+.rec-banner.warn{background:#fef3c7;border:2px solid #f59e0b;color:#78350f}
+.rec-banner.ok{background:#d1fae5;border:2px solid #10b981;color:#065f46}
+
+/* mascot */
+.mascot{animation:bob 2.4s ease-in-out infinite;overflow:visible}
+@keyframes bob{50%{transform:translateY(-6px)}}
+.mascot.jump{animation:jump .6s}
+.mascot.shake{animation:shake .5s}
+.mascot .eyes{transform-box:fill-box;transform-origin:center;animation:blink 4s infinite}
+@keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes jump{0%,100%{transform:translateY(0)}35%{transform:translateY(-22px) scale(1.08)}65%{transform:translateY(0) scale(.95)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px) rotate(-3deg)}40%{transform:translateX(9px) rotate(3deg)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+
+/* level cards */
+.title{margin:0;font-size:1.5rem;font-weight:900;text-align:center}
+.lv{width:100%;border:0;border-radius:24px;padding:16px;display:flex;align-items:center;gap:14px;color:#fff;text-align:right;font-weight:900}
+.lv .ic{font-size:2.4rem}
+.lv .tx{flex:1;display:flex;flex-direction:column;gap:3px;font-size:1.2rem}
+.lv .tx small{font-weight:700;font-size:.8rem;opacity:.95}
+.lv .st{font-size:1.3rem;letter-spacing:2px;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.3);direction:ltr}
+
+/* game */
+.top{width:100%;display:flex;align-items:center;gap:8px}
+.prog{flex:1;height:14px;border-radius:9px;background:rgba(0,0,0,.28);overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffe066,#ff9f1c);border-radius:9px;transition:width .5s cubic-bezier(.3,1.4,.5,1)}
+.hearts{font-size:1.15rem;letter-spacing:1px;white-space:nowrap}
+.hearts.hit{animation:shake .45s}
+.chips{width:100%;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;min-height:28px}
+.chip{background:rgba(0,0,0,.28);border-radius:14px;padding:4px 10px;font-weight:900;font-size:.82rem}
+.chip.combo{background:linear-gradient(#ff9f1c,#ff5d3d);animation:pulse .8s infinite}
+.say{width:100%;display:flex;align-items:center;gap:10px}
+.say .m{width:60px;flex:none}
+.say .m svg{width:60px;height:auto}
+.bubble{flex:1;background:#fff;color:#4a1a9c;border-radius:18px;padding:8px 12px;font-weight:800;font-size:.88rem;line-height:1.55;position:relative}
+.bubble::before{content:"";position:absolute;right:-9px;top:18px;border-left:10px solid #fff;border-top:8px solid transparent;border-bottom:8px solid transparent}
+.ticket{width:100%;background:#fffdf5;color:#3b1d6b;border-radius:22px;padding:10px 12px 14px;text-align:center;
+  box-shadow:0 8px 0 rgba(0,0,0,.18),0 16px 30px rgba(0,0,0,.25);border:3px dashed #ffc2d6;outline:5px solid #fffdf5}
+.ticket.pop{animation:popIn .45s cubic-bezier(.3,1.6,.5,1)}
+@keyframes popIn{from{opacity:0;transform:scale(.7) rotate(-3deg)}to{opacity:1;transform:none}}
+.tlabel{font-weight:900;color:#e0457b;font-size:.9rem}
+.tq{font-weight:700;color:#6b4fa3;font-size:.92rem;margin:2px 0 4px}
+.tq b{color:#e0457b}
+.big{font-size:3.2rem;font-weight:900;line-height:1.1;display:flex;justify-content:center;direction:ltr}
+.vis{width:100%;background:rgba(0,0,0,.22);border-radius:20px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.vis:empty{display:none}
+.vis small{font-weight:700;opacity:.95;text-align:center;font-size:.78rem}
+.gold{color:#ffe066}.cyan{color:#7be0ff}
+.pizzas{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.pz{overflow:visible}
+.pz.full{filter:drop-shadow(0 0 5px rgba(255,214,10,.95))}
+.pz.part{filter:drop-shadow(0 0 5px rgba(90,215,255,.95))}
+.pz .sl{transform-box:fill-box;transform-origin:center;animation:slpop .35s cubic-bezier(.3,1.6,.5,1) both;animation-delay:min(calc(var(--i)*30ms),700ms)}
+@keyframes slpop{from{opacity:0;transform:scale(.2)}to{opacity:1;transform:scale(1)}}
+
+/* fractions */
+.fr{display:inline-flex;flex-direction:column;align-items:center;line-height:1.05;vertical-align:middle;font-weight:900}
+.fr>.n{padding:0 .22em .06em;border-bottom:.085em solid currentColor;min-width:1em;text-align:center}
+.fr>.d{padding:.06em .22em 0;min-width:1em;text-align:center}
+.mx{display:inline-flex;align-items:center;gap:.14em;direction:ltr}
+.mx>.w{font-weight:900;font-size:1.15em}
+.m{display:inline-block;direction:ltr;font-weight:900}
+
+/* Color-coded fractions for tutorial & explanation sheet */
+.c-w{color:var(--c-whole)!important;font-weight:900}
+.c-n{color:var(--c-num)!important;font-weight:900}
+.c-d{color:var(--c-den)!important;font-weight:900}
+.bg-w{background:#d1fae5;color:#065f46;border:2px solid #10b981;padding:1px 8px;border-radius:10px;font-weight:900;display:inline-block}
+.bg-n{background:#ffe4e6;color:#9f1239;border:2px solid #f43f5e;padding:1px 8px;border-radius:10px;font-weight:900;display:inline-block}
+.bg-d{background:#dbeafe;color:#1e40af;border:2px solid #3b82f6;padding:1px 8px;border-radius:10px;font-weight:900;display:inline-block}
+
+/* answers */
+#ans{width:100%;display:flex;flex-direction:column;gap:12px;align-items:center}
+#ans.locked{pointer-events:none}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+.opt{border:0;border-radius:20px;background:#fff;color:#4a1a9c;font-size:1.9rem;font-weight:900;padding:10px 6px;min-height:92px;display:grid;place-items:center;
+  box-shadow:0 6px 0 #c9b6ff,0 10px 16px rgba(0,0,0,.25);transition:transform .08s;animation:popIn .4s both}
+.opt:nth-child(2){animation-delay:.05s}.opt:nth-child(3){animation-delay:.1s}.opt:nth-child(4){animation-delay:.15s}
+.opt:active{transform:translateY(4px)}
+.opt.ok{background:#3ddc84;color:#fff;box-shadow:0 6px 0 #1b9a53;animation:jump .55s}
+.opt.no{background:#ff5470;color:#fff;box-shadow:0 6px 0 #b3203a;animation:shake .45s}
+.opt.dim{opacity:.45}
+.builder{width:100%;display:grid;grid-template-columns:auto;justify-content:center;column-gap:20px;row-gap:12px;direction:ltr;align-items:center;justify-items:center}
+.builder.two{grid-template-columns:auto auto}
+.bf{display:flex;flex-direction:column;align-items:center;gap:0}
+.bf .line{width:100%;height:6px;border-radius:3px;background:#fff;margin:7px 0}
+.bx{min-width:84px;height:86px;padding:0 10px;font-size:2.7rem;font-weight:900;background:#fff;color:var(--purple);border-radius:20px;display:grid;place-items:center;
+  box-shadow:inset 0 -7px 0 #e4d6ff,0 6px 12px rgba(0,0,0,.2)}
+.bx.lock{background:rgba(255,255,255,.22);color:#fff;box-shadow:none;height:70px}
+.bx.bump{animation:bump .25s}
+@keyframes bump{40%{transform:scale(1.18)}}
+.ctrl{display:flex;gap:8px;justify-content:center}
+.cb{min-width:54px;height:48px;padding:0 8px;border:0;border-radius:15px;background:#ffe066;color:#5a3a00;font-size:1.4rem;font-weight:900;box-shadow:0 4px 0 #d19a00}
+.cb:active{transform:translateY(3px);box-shadow:0 1px 0 #d19a00}
+#chk{animation:pulse 1.2s infinite}
+@keyframes pulse{50%{transform:scale(1.04)}}
+.hintbox{width:100%;background:rgba(255,224,102,.18);border:2px dashed #ffe066;border-radius:16px;padding:10px 12px;font-weight:700;line-height:1.8;font-size:.92rem;display:none}
+.hintbox.show{display:block;animation:popIn .4s}
+
+/* sheet */
+#shade{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:39;opacity:0;pointer-events:none;transition:opacity .3s}
+#shade.show{opacity:1;pointer-events:auto}
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:40;transform:translateY(112%);transition:transform .45s cubic-bezier(.2,1.1,.3,1);display:flex;justify-content:center;pointer-events:none}
+#sheet.show{transform:none;pointer-events:auto}
+.sheet-in{width:100%;max-width:520px;background:#fff;color:#3b1d6b;border-radius:28px 28px 0 0;padding:16px 16px max(16px,env(safe-area-inset-bottom));
+  box-shadow:0 -10px 40px rgba(0,0,0,.4);max-height:84vh;overflow:auto;display:flex;flex-direction:column;gap:10px;align-items:center}
+.sheet-in.good{border-top:9px solid #3ddc84}
+.sheet-in.bad{border-top:9px solid #ff5470}
+.sh-t{font-size:1.35rem;font-weight:900;margin:0}
+.good .sh-t{color:#14a85a}.bad .sh-t{color:#e03355}
+.expr{display:flex;align-items:center;gap:12px;font-size:2rem;font-weight:900;direction:ltr;flex-wrap:wrap;justify-content:center}
+.sheet-in .vis{background:#4a1a9c;color:#fff}
+
+/* modal & Attractive Quick Tutorial */
+#modal{position:fixed;inset:0;z-index:60;background:rgba(10,0,40,.72);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:12px}
+#modal.show{display:flex;animation:scr .25s}
+.m-in{width:100%;max-width:450px;max-height:90vh;overflow:auto;background:#fff;color:#3b1d6b;border-radius:26px;padding:16px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center;border:3px solid #ffe066}
+.m-in h2{margin:0;font-size:1.25rem;font-weight:900}
+
+.tut-card{width:100%;border-radius:20px;padding:12px;display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center;border:2.5px solid}
+.tut-card.improper-box{background:linear-gradient(180deg,#fff1f2,#ffe4e6);border-color:#fda4af}
+.tut-card.mixed-box{background:linear-gradient(180deg,#eff6ff,#dbeafe);border-color:#93c5fd}
+.tut-head{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:99px;font-weight:900;font-size:.95rem;color:#fff}
+.tut-head.pink{background:linear-gradient(90deg,#ec4899,#e11d48)}
+.tut-head.blue{background:linear-gradient(90deg,#2563eb,#4f46e5)}
+
+.role-grid{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:.76rem;font-weight:900}
+.role-item{border-radius:12px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;background:#fff;border:2px solid}
+.role-item.w{border-color:#10b981;color:#065f46}
+.role-item.n{border-color:#f43f5e;color:#9f1239}
+.role-item.d{border-color:#3b82f6;color:#1e40af}
+
+/* Report Card (کارنامه جامع شبیه ششم نهایی) */
+.report-frame{
+  width:100%;
+  background:linear-gradient(180deg,#ffffff 0%,#f5f0ff 100%);
+  border:3.5px solid #eab308;
+  border-radius:24px;
+  padding:12px 14px;
+  color:#29125a;
+  box-shadow:0 10px 30px rgba(0,0,0,.45);
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.report-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:6px 4px;
+  border-bottom:1.5px dashed #d8b4fe;
+  font-size:.82rem;
+  font-weight:800;
+}
+.report-row:last-child{border-bottom:0}
+.badge-err{padding:2px 7px;border-radius:8px;font-size:.74rem;font-weight:900}
+.badge-err.bad{background:#ffe4e6;color:#be123c;border:1px solid #fda4af}
+.badge-err.ok{background:#d1fae5;color:#047857}
+
+/* result */
+.stars{display:flex;gap:10px;font-size:3.4rem;direction:ltr}
+.stars span{filter:grayscale(1) brightness(.6);transform:scale(.7);transition:all .4s cubic-bezier(.3,1.8,.5,1)}
+.stars span.on{filter:drop-shadow(0 0 10px #ffd60a);transform:scale(1.1)}
+.stats{width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.stat{background:rgba(0,0,0,.25);border-radius:16px;padding:10px 4px;text-align:center;font-weight:700;font-size:.8rem}
+.stat b{display:block;font-size:1.5rem}
+.pts{position:fixed;z-index:55;font-weight:900;font-size:1.8rem;text-shadow:0 3px 0 rgba(0,0,0,.35);pointer-events:none;transform:translate(-50%,-50%);animation:ptsUp 1.1s ease-out forwards}
+@keyframes ptsUp{to{transform:translate(-50%,-200%) scale(1.25);opacity:0}}
+@media (max-height:640px){.big{font-size:2.6rem}.big-mascot svg{width:95px}.logo{font-size:2rem}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <radialGradient id="cheese" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#fff0a0"/><stop offset="100%" stop-color="#ffb703"/></radialGradient>
+</defs></svg>
+<div class="bg" id="bg"></div>
+<canvas id="fx"></canvas>
+
+<!-- ==================== 1. HOME SCREEN ==================== -->
+<section id="home" class="screen active"><div class="wrap">
+  <div class="hrow">
+    <div class="stars-total" id="totalStars">🏆 امتیاز: ۰ از ۱۰۰۰</div>
+    <div style="display:flex;gap:8px">
+      <button class="iconbtn" id="sfxBtn" title="افکت">🔊</button>
+      <button class="iconbtn" id="musBtn" title="موسیقی">🎵</button>
+    </div>
+  </div>
+
+  <div class="big-mascot" id="homeMascot"></div>
+  <h1 class="logo">پیتزا کسری</h1>
+  <p class="tag">آشپز کوچولو! تبدیل کسر و عدد مخلوط رو یاد بگیر 🍕</p>
+  <div class="designer-pill">
+    <span>✨</span>
+    <span>طراحی شده توسط آموزگار زمانی</span>
+    <span>✨</span>
+  </div>
+
+  <div class="home-card">
+    <div>
+      <label for="inpName" class="name-label">👨‍🍳 نام سرآشپز قهرمان را بنویس:</label>
+      <input id="inpName" class="name-inp" type="text" maxlength="26" placeholder="نام و نام خانوادگی دانش‌آموز...">
+    </div>
+
+    <button class="btn big green center" id="advBtn" style="font-size:1.05rem;padding:13px 16px">
+      <span>🚀</span>
+      <span id="advBtnTxt">شروع ماجراجویی کامل (۱۰۰۰ امتیازی)</span>
+    </button>
+
+    <div id="homeRecBanner" class="rec-banner" style="display:none"></div>
+    <div id="modesHeader" class="sec-note">🔒 پس از پایان «ماجراجویی کامل»، ۳ بخش تمرینی زیر باز می‌شوند:</div>
+
+    <button class="btn big pink" data-mode="toMixed"></button>
+    <button class="btn big blue" data-mode="toImproper"></button>
+    <button class="btn big purple" data-mode="mix"></button>
+
+    <div class="row" style="margin-top:2px">
+      <button class="btn yellow" id="helpBtn">📘 آموزش سریع</button>
+      <button class="btn purple" id="reportBtn">🏁 مشاهده کارنامه</button>
+    </div>
+  </div>
+</div></section>
+
+<!-- ==================== 2. LEVELS SCREEN ==================== -->
+<section id="levels" class="screen"><div class="wrap">
+  <div class="hrow"><button class="iconbtn" id="lvBack">➜</button><h2 class="title" id="lvTitle"></h2><span style="width:44px"></span></div>
+  <p class="tag">سطح بازی رو انتخاب کن</p>
+  <div id="lvList" style="width:100%;display:flex;flex-direction:column;gap:14px"></div>
+</div></section>
+
+<!-- ==================== 3. GAME SCREEN ==================== -->
+<section id="game" class="screen"><div class="wrap">
+  <div class="top">
+    <button class="iconbtn" id="gExit" title="خروج">✕</button>
+    <div class="prog"><i id="pbar"></i></div>
+    <div class="hearts" id="hearts"></div>
+    <button class="iconbtn" id="gReportBtn" title="کارنامه" style="width:auto;padding:0 10px;font-size:.8rem">🏁 کارنامه</button>
+  </div>
+  <div class="chips">
+    <span class="chip" id="gStageChip">🍕 مرحله</span>
+    <span class="chip">⭐ <span id="gScore">۰</span></span>
+    <span class="chip" id="gNum"></span>
+    <span class="chip combo" id="gCombo" style="display:none"></span>
+  </div>
+  <div class="say"><div class="m" id="gMascot"></div><div class="bubble" id="bubble"></div></div>
+  <div class="ticket" id="ticket"></div>
+  <div class="vis" id="vis"></div>
+  <div id="ans"></div>
+  <div class="hintbox" id="hintbox"></div>
+  <button class="btn yellow" id="hintBtn">💡 راهنما</button>
+</div></section>
+
+<!-- ==================== 4. LEVEL RESULT SCREEN ==================== -->
+<section id="result" class="screen"><div class="wrap" id="resWrap"></div></section>
+
+<!-- ==================== 5. FULL REPORT CARD SCREEN (کارنامه) ==================== -->
+<section id="report" class="screen"><div class="wrap" id="reportWrap"></div></section>
+
+<div id="shade"></div>
+<div id="sheet"><div class="sheet-in" id="sheetIn"></div></div>
+<div id="modal"><div class="m-in" id="mIn"></div></div>
+
+<script>
+(()=>{
+'use strict';
+/* ================= helpers ================= */
+const $=(s,r=document)=>r.querySelector(s);
+const fa=n=>String(n).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
+const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+const vib=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
+const frac=(n,d)=>`<span class="fr"><span class="n">${fa(n)}</span><span class="d">${fa(d)}</span></span>`;
+const mixed=(w,n,d)=>`<span class="mx"><span class="w">${fa(w)}</span>${frac(n,d)}</span>`;
+
+/* Color-coded fraction & mixed helpers for tutorial and feedback sheet */
+const cFrac=(n,d,nCls='c-n',dCls='c-d')=>`<span class="fr"><span class="n ${nCls}">${fa(n)}</span><span class="d ${dCls}">${fa(d)}</span></span>`;
+const cMixed=(w,n,d)=>`<span class="mx"><span class="w c-w">${fa(w)}</span>${cFrac(n,d,'c-n','c-d')}</span>`;
+
+/* ================= storage & adventure state ================= */
+const MAX_ADV_SCORE = 1000;
+const MAX_ADV_STARS = 9; // 3 stages * 3 stars
+
+let store={
+  studentName:'',
+  advUnlocked:false,
+  advScore:0,
+  totalCorrect:0,
+  totalWrong:0,
+  modeSolved:{toMixed:0,toImproper:0,mix:0},
+  modeErrors:{toMixed:0,toImproper:0,mix:0},
+  modeStars:{toMixed:0,toImproper:0,mix:0},
+  skillErrors:{divToMixed:0,multToImproper:0,wholePart:0,numPart:0},
+  stars:{},
+  best:{},
+  sfx:true,
+  music:true
+};
+try{
+  const s=JSON.parse(localStorage.getItem('pizzaKasriV2')||'null');
+  if(s){
+    store=Object.assign(store,s);
+    store.modeSolved=Object.assign({toMixed:0,toImproper:0,mix:0},s.modeSolved);
+    store.modeErrors=Object.assign({toMixed:0,toImproper:0,mix:0},s.modeErrors);
+    store.modeStars=Object.assign({toMixed:0,toImproper:0,mix:0},s.modeStars);
+    store.skillErrors=Object.assign({divToMixed:0,multToImproper:0,wholePart:0,numPart:0},s.skillErrors);
+  }
+}catch(e){}
+store.stars=store.stars||{};store.best=store.best||{};
+const save=()=>{try{localStorage.setItem('pizzaKasriV2',JSON.stringify(store))}catch(e){}};
+
+/* ================= audio ================= */
+let AC=null,master,musicGain,mtimer=null,nextT=0,bar=0;
+function ac(){
+  if(!AC){
+    const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;
+    AC=new C();master=AC.createGain();master.gain.value=.9;master.connect(AC.destination);
+    musicGain=AC.createGain();musicGain.gain.value=.16;musicGain.connect(master);
+  }
+  if(AC.state==='suspended')AC.resume();
+  return AC;
+}
+function tone(f,t0,dur,type='sine',vol=.3,slide=null,dest=null){
+  const a=ac();if(!a)return;
+  const o=a.createOscillator(),g=a.createGain();
+  o.type=type;o.frequency.setValueAtTime(f,t0);
+  if(slide)o.frequency.exponentialRampToValueAtTime(slide,t0+dur);
+  g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(vol,t0+.015);g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
+  o.connect(g);g.connect(dest||master);o.start(t0);o.stop(t0+dur+.05);
+}
+const S={
+  click(){const t=AC.currentTime;tone(700,t,.07,'triangle',.18)},
+  up(){const t=AC.currentTime;tone(520,t,.08,'triangle',.22);tone(780,t+.04,.07,'triangle',.15)},
+  down(){const t=AC.currentTime;tone(520,t,.08,'triangle',.22);tone(380,t+.04,.07,'triangle',.15)},
+  hint(){const t=AC.currentTime;[659,880,1175].forEach((f,i)=>tone(f,t+i*.07,.18,'sine',.22))},
+  correct(){const t=AC.currentTime;[523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f,t+i*.07,.28,'triangle',.32));tone(2093,t+.28,.35,'sine',.1)},
+  combo(){const t=AC.currentTime;[784,988,1175,1568,1976].forEach((f,i)=>tone(f,t+i*.06,.22,'sine',.22))},
+  wrong(){const t=AC.currentTime;tone(220,t,.28,'sawtooth',.2,120);tone(165,t+.14,.35,'sawtooth',.2,70)},
+  star(){const t=AC.currentTime;tone(1047,t,.4,'sine',.3);tone(1568,t+.05,.5,'sine',.2)},
+  win(){const t=AC.currentTime;[523,523,523,659,784,659,784,1047].forEach((f,i)=>tone(f,t+i*.14,.3,'triangle',.3));},
+  lose(){const t=AC.currentTime;[392,370,349,330].forEach((f,i)=>tone(f,t+i*.22,.4,'triangle',.28,f*.93))},
+  whoosh(){const t=AC.currentTime;tone(300,t,.25,'sine',.15,900)}
+};
+const sfx=n=>{if(!store.sfx)return;try{ac();S[n]()}catch(e){}};
+const CH=[[261.63,329.63,392,523.25],[220,261.63,329.63,440],[174.61,220,261.63,349.23],[196,246.94,293.66,392]];
+const PAT=[0,1,2,3,2,1,2,3];
+function scheduleBar(t){
+  const ch=CH[bar%4],e=.25;
+  for(let i=0;i<8;i++)tone(ch[PAT[i]],t+i*e,.22,'triangle',.5,null,musicGain);
+  tone(ch[0]/2,t,.45,'sine',.9,null,musicGain);tone(ch[0]/2,t+4*e,.45,'sine',.9,null,musicGain);
+  if(bar%2===1){const m=[523.25,587.33,659.25,783.99,880];[0,2,4,6].forEach(i=>{if(Math.random()<.6)tone(pick(m),t+i*e,.3,'sine',.4,null,musicGain)})}
+  bar++;return 8*e;
+}
+function musicTick(){
+  if(!store.music||!AC||AC.state!=='running')return;
+  if(nextT<AC.currentTime)nextT=AC.currentTime+.05;
+  while(nextT<AC.currentTime+.6)nextT+=scheduleBar(nextT);
+}
+function startMusic(){if(!ac())return;nextT=AC.currentTime+.1;if(!mtimer)mtimer=setInterval(musicTick,200)}
+document.addEventListener('visibilitychange',()=>{if(!AC)return;document.hidden?AC.suspend():AC.resume()});
+document.addEventListener('pointerdown',()=>{ac();if(store.music)startMusic()},{once:true});
+document.addEventListener('click',e=>{if(e.target.closest('.btn,.iconbtn'))sfx('click')});
+
+/* ================= effects ================= */
+const cv=$('#fx'),cx=cv.getContext('2d');let W=0,H=0,parts=[],raf=0;
+function resize(){const r=window.devicePixelRatio||1;W=innerWidth;H=innerHeight;cv.width=W*r;cv.height=H*r;cx.setTransform(r,0,0,r,0,0)}
+addEventListener('resize',resize);resize();
+const COLORS=['#ffe066','#ff5d8f','#3ddc84','#4cc9f0','#ff9f1c','#b388ff'];
+function burst(x,y,n=40,power=9){
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2,s=Math.random()*power+2,k=Math.random();
+    parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-4,g:.28,r:rnd(4,8),c:pick(COLORS),rot:Math.random()*6,vr:(Math.random()-.5)*.4,life:0,max:rnd(55,95),shape:k<.22?'e':k<.6?'c':'r',e:pick(['⭐','🍕','✨','🧀'])});
+  }
+  if(!raf)loop();
+}
+function rain(n=90){
+  for(let i=0;i<n;i++)parts.push({x:Math.random()*W,y:-20-Math.random()*H*.5,vx:(Math.random()-.5)*2,vy:rnd(2,5),g:.04,r:rnd(4,8),c:pick(COLORS),rot:Math.random()*6,vr:(Math.random()-.5)*.3,life:0,max:rnd(160,240),shape:Math.random()<.2?'e':'r',e:pick(['⭐','🍕','🎉'])});
+  if(!raf)loop();
+}
+function loop(){
+  cx.clearRect(0,0,W,H);
+  parts=parts.filter(p=>p.life<p.max);
+  for(const p of parts){
+    p.life++;p.vy+=p.g;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;
+    cx.globalAlpha=Math.max(0,Math.min(1,(p.max-p.life)/20));
+    cx.save();cx.translate(p.x,p.y);cx.rotate(p.rot);cx.fillStyle=p.c;
+    if(p.shape==='e'){cx.font=(p.r*3)+'px serif';cx.fillText(p.e,-p.r,p.r)}
+    else if(p.shape==='c'){cx.beginPath();cx.arc(0,0,p.r*.7,0,7);cx.fill()}
+    else cx.fillRect(-p.r,-p.r/2,p.r*2,p.r);
+    cx.restore();
+  }
+  cx.globalAlpha=1;
+  if(parts.length)raf=requestAnimationFrame(loop);else{raf=0;cx.clearRect(0,0,W,H)}
+}
+function floatText(t,x,y,color='#ffe066'){
+  const e=document.createElement('div');e.className='pts';e.textContent=t;e.style.cssText=`left:${x}px;top:${y}px;color:${color}`;
+  document.body.appendChild(e);setTimeout(()=>e.remove(),1100);
+}
+function centerOf(el){const r=el.getBoundingClientRect();return[r.left+r.width/2,r.top+r.height/2]}
+function bump(el){el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump')}
+
+/* background floaters */
+(()=>{
+  const items=['🍕','½','¾','⅔','🧀','⭐','⅜','🍅','⅝','🍕'];
+  const bg=$('#bg');
+  for(let i=0;i<16;i++){
+    const s=document.createElement('span');s.textContent=pick(items);
+    s.style.cssText=`left:${rnd(0,95)}%;font-size:${rnd(22,52)}px;animation-duration:${rnd(14,30)}s;animation-delay:-${rnd(0,28)}s`;
+    bg.appendChild(s);
+  }
+})();
+
+/* ================= mascot ================= */
+function mascot(){return `<svg class="mascot" viewBox="0 0 120 135">
+<ellipse cx="60" cy="131" rx="34" ry="4.5" fill="rgba(0,0,0,.22)"/>
+<path d="M22 132Q22 108 60 108Q98 108 98 132Z" fill="#fff"/>
+<circle cx="60" cy="122" r="2.6" fill="#d8ceff"/><circle cx="60" cy="129" r="2.6" fill="#d8ceff"/>
+<path d="M47 108L60 124L73 108Z" fill="#ff5d8f"/>
+<circle cx="60" cy="80" r="36" fill="#ffd3a8"/>
+<circle cx="39" cy="91" r="7" fill="#ff8fa3" opacity=".6"/><circle cx="81" cy="91" r="7" fill="#ff8fa3" opacity=".6"/>
+<circle cx="40" cy="30" r="17" fill="#fff" stroke="#e4dcff" stroke-width="2"/>
+<circle cx="60" cy="21" r="19" fill="#fff" stroke="#e4dcff" stroke-width="2"/>
+<circle cx="80" cy="30" r="17" fill="#fff" stroke="#e4dcff" stroke-width="2"/>
+<rect x="36" y="36" width="48" height="21" rx="7" fill="#fff" stroke="#e4dcff" stroke-width="2"/>
+<g class="eyes"><ellipse cx="47" cy="77" rx="5" ry="7" fill="#2b1b4a"/><ellipse cx="73" cy="77" rx="5" ry="7" fill="#2b1b4a"/><circle cx="49" cy="74" r="2" fill="#fff"/><circle cx="75" cy="74" r="2" fill="#fff"/></g>
+<g class="hap" style="display:none"><path d="M41 79Q47 68 53 79" fill="none" stroke="#2b1b4a" stroke-width="3.5" stroke-linecap="round"/><path d="M67 79Q73 68 79 79" fill="none" stroke="#2b1b4a" stroke-width="3.5" stroke-linecap="round"/></g>
+<path class="mouth" d="M48 95Q60 107 72 95" fill="none" stroke="#7a2d2d" stroke-width="3.5" stroke-linecap="round"/>
+</svg>`}
+function setMood(root,m){
+  const mo=root.querySelector('.mouth'),ey=root.querySelector('.eyes'),hp=root.querySelector('.hap');if(!mo)return;
+  ey.style.display=m==='happy'?'none':'';hp.style.display=m==='happy'?'':'none';
+  if(m==='happy'){mo.setAttribute('d','M46 92Q60 114 74 92Z');mo.setAttribute('fill','#7a2d2d')}
+  else if(m==='sad'){mo.setAttribute('d','M48 103Q60 90 72 103');mo.setAttribute('fill','none')}
+  else{mo.setAttribute('d','M48 95Q60 107 72 95');mo.setAttribute('fill','none')}
+}
+function anim(root,cls){const s=root.querySelector('svg');s.classList.remove('jump','shake');void s.getBoundingClientRect();s.classList.add(cls);setTimeout(()=>s.classList.remove(cls),650)}
+
+/* ================= pizza drawing ================= */
+function pizzaSVG(d,filled,size,cls,k){
+  const R=45,c=50;let s=`<svg class="pz ${cls}" viewBox="0 0 100 100" width="${size}" height="${size}"><circle cx="50" cy="50" r="49" fill="rgba(255,255,255,.13)"/>`;
+  for(let i=0;i<d;i++){
+    const a0=(-90+i*360/d)*Math.PI/180,a1=(-90+(i+1)*360/d)*Math.PI/180;
+    const x0=(c+R*Math.cos(a0)).toFixed(2),y0=(c+R*Math.sin(a0)).toFixed(2),x1=(c+R*Math.cos(a1)).toFixed(2),y1=(c+R*Math.sin(a1)).toFixed(2);
+    const on=i<filled;
+    s+=`<g class="sl" style="--i:${i+k*2}">`;
+    s+=`<path d="M${c} ${c}L${x0} ${y0}A${R} ${R} 0 0 1 ${x1} ${y1}Z" fill="${on?'url(#cheese)':'rgba(255,255,255,.08)'}" stroke="${on?'#b35c14':'rgba(255,255,255,.55)'}" stroke-width="${on?1.2:1}"${on?'':' stroke-dasharray="3 3"'}/>`;
+    if(on){
+      s+=`<path d="M${x0} ${y0}A${R} ${R} 0 0 1 ${x1} ${y1}" fill="none" stroke="#e39a3b" stroke-width="4.5" stroke-linecap="round"/>`;
+      const am=(a0+a1)/2,pr=d>8?3:d>5?4:5.2;
+      s+=`<circle cx="${(c+R*.58*Math.cos(am)).toFixed(2)}" cy="${(c+R*.58*Math.sin(am)).toFixed(2)}" r="${pr}" fill="#e63946"/>`;
+    }
+    s+='</g>';
+  }
+  return s+'</svg>';
+}
+function pizzaGroup(d,fills,scale=1){
+  const n=fills.length;
+  let size=n<=1?130:n<=2?110:n<=3?92:n<=4?80:n<=6?64:n<=9?54:46;size=Math.round(size*scale);
+  return `<div class="pizzas">${fills.map((f,k)=>pizzaSVG(d,f,size,f===d?'full':'part',k)).join('')}</div>`;
+}
+const fillsOf=q=>{const a=Array(q.w).fill(q.d);a.push(q.r);return a};
+const visHTML=(q,scale=1)=>`${pizzaGroup(q.d,fillsOf(q),scale)}<small>هر پیتزا ${fa(q.d)} تکه است · <span class="gold">طلایی</span> = پیتزای کامل · <span class="cyan">آبی</span> = تکه‌های باقی‌مانده</small>`;
+
+/* ================= COLOR-CODED LONG DIVISION SVG (تقسیم چکشی) ================= */
+/**
+ * Renders a crystal-clear, color-coded Iranian school Long Division (تقسیم چکشی) diagram
+ * for converting an improper fraction n/d into a mixed number w r/d:
+ * - مقسوم‌علیه (d - مخرج): آبی (#2563eb)
+ * - خارج قسمت (w - عدد صحیح): سبز (#059669)
+ * - باقیمانده (r - صورت کسر): قرمز (#e11d48)
+ */
+function renderLongDivisionSVG(n, d, w, r) {
+  const prod = w * d;
+  return `<svg viewBox="0 0 290 132" width="100%" style="max-width:295px;overflow:visible;display:block;margin:0 auto">
+    <!-- Background Card -->
+    <rect x="2" y="2" width="286" height="128" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+
+    <!-- Long Division Bracket (چکشی) -->
+    <!-- Vertical bar between dividend (left) and divisor (right) -->
+    <line x1="125" y1="16" x2="125" y2="108" stroke="#334155" stroke-width="3.2" stroke-linecap="round"/>
+    <!-- Horizontal bar between divisor (top-right) and quotient (bottom-right) -->
+    <line x1="125" y1="54" x2="215" y2="54" stroke="#334155" stroke-width="3.2" stroke-linecap="round"/>
+
+    <!-- Dividend (مقسوم: n) -->
+    <text x="92" y="42" text-anchor="middle" fill="#334155" font-size="24" font-weight="900">${fa(n)}</text>
+
+    <!-- Subtracted Product (- w*d) -->
+    <text x="86" y="74" text-anchor="middle" fill="#64748b" font-size="19" font-weight="800">− ${fa(prod)}</text>
+    <line x1="60" y1="83" x2="115" y2="83" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round"/>
+
+    <!-- Remainder (باقیمانده: r -> صورت) in Red Pill -->
+    <rect x="70" y="90" width="42" height="30" rx="9" fill="#ffe4e6" stroke="#f43f5e" stroke-width="2.2"/>
+    <text x="91" y="112" text-anchor="middle" fill="#e11d48" font-size="21" font-weight="900">${fa(r)}</text>
+    <!-- Label for Remainder -->
+    <text x="36" y="109" text-anchor="middle" fill="#e11d48" font-size="11.5" font-weight="900">باقیمانده</text>
+    <text x="36" y="122" text-anchor="middle" fill="#be123c" font-size="10" font-weight="900">(صورت)</text>
+
+    <!-- Divisor (مقسوم‌علیه: d -> مخرج) in Blue Pill -->
+    <rect x="138" y="16" width="44" height="30" rx="9" fill="#dbeafe" stroke="#3b82f6" stroke-width="2.2"/>
+    <text x="160" y="38" text-anchor="middle" fill="#2563eb" font-size="21" font-weight="900">${fa(d)}</text>
+    <!-- Label for Divisor -->
+    <text x="236" y="30" text-anchor="middle" fill="#2563eb" font-size="11.5" font-weight="900">مخرج</text>
+    <text x="236" y="43" text-anchor="middle" fill="#1d4ed8" font-size="10" font-weight="900">(ثابت)</text>
+
+    <!-- Quotient (خارج قسمت: w -> عدد صحیح) in Green Pill -->
+    <rect x="138" y="62" width="44" height="32" rx="9" fill="#d1fae5" stroke="#10b981" stroke-width="2.2"/>
+    <text x="160" y="85" text-anchor="middle" fill="#059669" font-size="22" font-weight="900">${fa(w)}</text>
+    <!-- Label for Quotient -->
+    <text x="236" y="76" text-anchor="middle" fill="#059669" font-size="11.5" font-weight="900">خارج قسمت</text>
+    <text x="236" y="89" text-anchor="middle" fill="#047857" font-size="10" font-weight="900">(عدد صحیح)</text>
+  </svg>`;
+}
+
+/**
+ * Renders a color-coded visual diagram for converting Mixed Number -> Improper Fraction
+ * showing the exact color roles of عدد صحیح (Green), صورت (Red), and مخرج (Blue).
+ */
+function renderMixedToImproperDiagram(w, r, d, n) {
+  return `<div style="width:100%;background:#fff;border:2px solid #bfdbfe;border-radius:16px;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:8px">
+    <!-- Color-coded formula badges -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap;font-size:.82rem;font-weight:900;direction:rtl">
+      <span class="bg-w">عدد صحیح (${fa(w)})</span>
+      <span style="color:#475569;font-size:1rem">×</span>
+      <span class="bg-d">مخرج (${fa(d)})</span>
+      <span style="color:#475569;font-size:1rem">+</span>
+      <span class="bg-n">صورت (${fa(r)})</span>
+      <span style="color:#475569">=</span>
+      <span class="bg-n">صورت جدید (${fa(n)})</span>
+    </div>
+
+    <!-- Step-by-step numeric calculation -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;direction:ltr;font-size:1.35rem;font-weight:900;background:#f8fafc;padding:6px 14px;border-radius:14px;border:1.5px dashed #cbd5e1">
+      ${cMixed(w, r, d)}
+      <span style="color:#64748b">=</span>
+      <span class="fr">
+        <span class="n" style="font-size:1.05rem">
+          (<span class="c-w">${fa(w)}</span> × <span class="c-d">${fa(d)}</span>) + <span class="c-n">${fa(r)}</span>
+        </span>
+        <span class="d c-d">${fa(d)}</span>
+      </span>
+      <span style="color:#64748b">=</span>
+      ${cFrac(n, d, 'c-n', 'c-d')}
+    </div>
+  </div>`;
+}
+
+/* ================= screens ================= */
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));const e=$('#'+id);if(e)e.scrollTop=0}
+function openModal(html,btns){
+  const m=$('#mIn');m.innerHTML=html;
+  const row=document.createElement('div');row.className='row';row.style.width='100%';
+  btns.forEach(b=>{const x=document.createElement('button');x.className='btn '+(b.c||'green');x.textContent=b.t;x.onclick=()=>{closeModal();b.f&&b.f()};row.appendChild(x)});
+  m.appendChild(row);$('#modal').classList.add('show');
+}
+const closeModal=()=>$('#modal').classList.remove('show');
+
+/* ================= data ================= */
+const MODES={toMixed:'کسر ← عدد مخلوط',toImproper:'عدد مخلوط ← کسر',mix:'چالش ترکیبی'};
+const DIFFS={
+  easy:{name:'آسان',icon:'🌱',desc:'مخرج ۲ تا ۴ · همراه با تصویر پیتزا',dMin:2,dMax:4,wMin:1,wMax:2,choice:.8,vis:true,cls:'green'},
+  medium:{name:'متوسط',icon:'🔥',desc:'مخرج ۲ تا ۸ · همراه با تصویر پیتزا',dMin:2,dMax:8,wMin:1,wMax:4,choice:.5,vis:true,cls:'yellow'},
+  hard:{name:'سخت',icon:'🚀',desc:'مخرج ۳ تا ۱۲ · تصویر فقط با راهنما',dMin:3,dMax:12,wMin:2,wMax:9,choice:.25,vis:false,cls:''}
+};
+
+/* Adventure Stages (3 stages = 10 questions total, 100 pts each = 1000 max) */
+const ADV_STAGES = [
+  { mode:'toMixed',    title:'مرحله ۱: کسر ← عدد مخلوط', icon:'🍕', count:3, diff:'easy' },
+  { mode:'toImproper', title:'مرحله ۲: عدد مخلوط ← کسر', icon:'🥡', count:3, diff:'easy' },
+  { mode:'mix',        title:'مرحله ۳: چالش ترکیبی سرآشپز', icon:'🎲', count:4, diff:'medium' }
+];
+
+function getWeakModes(){
+  const list=[];
+  ['toMixed','toImproper','mix'].forEach(m=>{
+    if((store.modeErrors[m]||0)>0)list.push(m);
+  });
+  list.sort((a,b)=>(store.modeErrors[b]||0)-(store.modeErrors[a]||0));
+  return list;
+}
+
+/* ================= home ================= */
+function renderHome(){
+  $('#homeMascot').innerHTML=mascot();
+  if(store.studentName && !$('#inpName').value){
+    $('#inpName').value=store.studentName;
+  }
+
+  const unlocked=!!store.advUnlocked;
+  const weak=getWeakModes();
+  const dispScore=Math.min(MAX_ADV_SCORE,store.advScore||0);
+  $('#totalStars').textContent=`🏆 امتیاز: ${fa(dispScore)} از ${fa(MAX_ADV_SCORE)}`;
+
+  $('#advBtnTxt').textContent=unlocked
+    ?`🔄 شروع دوباره ماجراجویی کامل (${fa(MAX_ADV_SCORE)} امتیازی)`
+    :`شروع ماجراجویی کامل (${fa(MAX_ADV_SCORE)} امتیازی)`;
+
+  const recEl=$('#homeRecBanner');
+  const hdrEl=$('#modesHeader');
+  if(unlocked){
+    hdrEl.textContent='🔓 بخش‌های تمرینی باز شدند! هر مبحث را خواستی انتخاب کن:';
+    recEl.style.display='block';
+    if(weak.length>0){
+      const names=weak.map(m=>`«${MODES[m]}»`).join(' و ');
+      recEl.className='rec-banner warn';
+      recEl.innerHTML=`💡 پیشنهاد تمرین: در ${names} خطا داشتی؛ روی این بخش بیشتر تمرین کن!`;
+    }else{
+      recEl.className='rec-banner ok';
+      recEl.innerHTML=`🌟 عالی! ماجراجویی کامل را بدون خطا گذراندی. تمام بخش‌ها باز هستند!`;
+    }
+  }else{
+    hdrEl.textContent='🔒 پس از پایان «ماجراجویی کامل»، ۳ بخش تمرینی زیر باز می‌شوند:';
+    recEl.style.display='none';
+  }
+
+  document.querySelectorAll('[data-mode]').forEach(b=>{
+    const m=b.dataset.mode;
+    const isRec=unlocked && weak.includes(m);
+    const prev=m==='toMixed'?`${frac(7,3)} = ${mixed(2,1,3)}`:m==='toImproper'?`${mixed(2,1,3)} = ${frac(7,3)}`:`هر دو نوع سوال!`;
+    b.classList.toggle('locked',!unlocked);
+    b.classList.toggle('rec-ring',isRec);
+    b.innerHTML=`
+      ${isRec?`<span class="rec-badge">🎯 پیشنهاد تمرین</span>`:''}
+      <span class="ic">${m==='toMixed'?'🍕':m==='toImproper'?'🥡':'🎲'}</span>
+      <span class="tx">
+        <b>${MODES[m]}</b>
+        <small>${m==='mix'?prev:'مثال: '+prev}</small>
+      </span>
+      <span class="go">${unlocked?'◀':'🔒'}</span>
+    `;
+  });
+
+  $('#sfxBtn').classList.toggle('off',!store.sfx);
+  $('#musBtn').classList.toggle('off',!store.music);
+}
+
+$('#inpName').addEventListener('input',e=>{
+  store.studentName=e.target.value.trim();
+  save();
+});
+
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{
+  const m=b.dataset.mode;
+  const nm=$('#inpName').value.trim();
+  if(nm){store.studentName=nm;save();}
+  if(!store.advUnlocked){
+    sfx('wrong');
+    openModal(`<h2>این بخش هنوز قفل است! 🔒</h2>
+      <p style="margin:0;font-weight:700;line-height:1.8;font-size:.92rem">
+        ابتدا دکمه سبز <b>«🚀 شروع ماجراجویی کامل»</b> را بزن و ۱۰ سفارش سرآشپز را کامل کن تا امتیازت از <b>${fa(MAX_ADV_SCORE)}</b> ثبت شود و هر ۳ بخش تمرینی برایت باز شوند!
+      </p>`,
+      [{t:'🚀 شروع ماجراجویی کامل',c:'green',f:()=>startFullAdventure()},{t:'باشه',c:'purple'}]);
+    return;
+  }
+  openLevels(m);
+});
+
+$('#advBtn').onclick=()=>startFullAdventure();
+$('#reportBtn').onclick=()=>showReportCard();
+$('#gReportBtn').onclick=()=>showReportCard();
+$('#sfxBtn').onclick=()=>{store.sfx=!store.sfx;save();renderHome()};
+$('#musBtn').onclick=()=>{store.music=!store.music;save();if(store.music)startMusic();renderHome()};
+$('#lvBack').onclick=()=>{renderHome();show('home')};
+
+function openLevels(mode){
+  $('#lvTitle').textContent=MODES[mode];
+  const list=$('#lvList');list.innerHTML='';
+  Object.entries(DIFFS).forEach(([k,c])=>{
+    const s=store.stars[mode+'-'+k]||0;
+    const b=document.createElement('button');b.className='btn lv '+c.cls;
+    b.innerHTML=`<span class="ic">${c.icon}</span><span class="tx">${c.name}<small>${c.desc}</small></span><span class="st">${'★'.repeat(s)}${'☆'.repeat(3-s)}</span>`;
+    b.onclick=()=>startGame(mode,k,false);list.appendChild(b);
+  });
+  show('levels');
+}
+
+/* ================= game & full adventure ================= */
+const G={};
+
+function startFullAdventure(){
+  const nm=$('#inpName').value.trim();
+  store.studentName=nm||'سرآشپز قهرمان';
+  // Reset official adventure metrics so score is strictly out of 1000
+  store.advScore=0;
+  store.totalCorrect=0;
+  store.totalWrong=0;
+  store.modeSolved={toMixed:0,toImproper:0,mix:0};
+  store.modeErrors={toMixed:0,toImproper:0,mix:0};
+  store.modeStars={toMixed:0,toImproper:0,mix:0};
+  store.skillErrors={divToMixed:0,multToImproper:0,wholePart:0,numPart:0};
+  save();
+
+  Object.assign(G,{
+    isAdventure:true,
+    advStageIdx:0,
+    advStageQ:0,
+    mode:'toMixed',
+    diff:'easy',
+    i:0,
+    total:10,
+    lives:3,
+    score:0,
+    correct:0,
+    combo:0,
+    maxCombo:0,
+    stageCorrect:[0,0,0],
+    used:new Set(),
+    q:null,
+    answered:false,
+    in:{w:0,n:0}
+  });
+  $('#gMascot').innerHTML=mascot();
+  show('game');updateHUD();nextQ();
+}
+
+function startGame(mode,diff,isAdv=false){
+  const nm=$('#inpName').value.trim();
+  if(nm){store.studentName=nm;save();}
+  Object.assign(G,{
+    isAdventure:isAdv,
+    mode,diff,
+    i:0,total:10,lives:3,score:0,correct:0,combo:0,maxCombo:0,
+    used:new Set(),q:null,answered:false,in:{w:0,n:0}
+  });
+  $('#gMascot').innerHTML=mascot();
+  show('game');updateHUD();nextQ();
+}
+
+function updateHUD(){
+  $('#hearts').innerHTML=G.isAdventure
+    ?'🏆 ماجراجویی'
+    :[0,1,2].map(i=>i<G.lives?'❤️':'🖤').join('');
+  $('#gScore').textContent=G.isAdventure
+    ?`${fa(G.score)} از ${fa(MAX_ADV_SCORE)}`
+    :fa(G.score);
+  $('#gNum').textContent=`سفارش ${fa(Math.min(G.i+1,G.total))} از ${fa(G.total)}`;
+  $('#gStageChip').textContent=G.isAdventure
+    ?ADV_STAGES[G.advStageIdx].title
+    :`🍕 ${MODES[G.mode]}`;
+  const cb=$('#gCombo');if(G.combo>=2){cb.style.display='';cb.textContent=`🔥 کمبو ×${fa(G.combo)}`}else cb.style.display='none';
+}
+
+const setBubble=t=>$('#bubble').textContent=t;
+function genQ(mode,c){
+  const type=mode==='mix'?pick(['toMixed','toImproper']):mode;
+  const d=rnd(c.dMin,c.dMax),w=rnd(c.wMin,c.wMax),r=rnd(1,d-1),n=w*d+r;
+  const q={type,stageMode:mode,d,w,r,n,hinted:false,key:type+n+'/'+d,format:Math.random()<c.choice?'choice':'input'};
+  if(q.format==='choice')q.opts=makeOpts(q);
+  return q;
+}
+function makeOpts(q){
+  const {d,w,r,n,type}=q,seen=new Set(),out=[];
+  const ansKey=type==='toMixed'?`${w}-${r}`:`${n}`;seen.add(ansKey);
+  const add=(a,b)=>{
+    if(type==='toMixed'){if(!(a>=1&&b>=1&&b<d))return;const k=`${a}-${b}`;if(seen.has(k))return;seen.add(k);out.push({k,html:mixed(a,b,d),w:a,r:b})}
+    else{if(!(a>=1))return;const k=`${a}`;if(seen.has(k))return;seen.add(k);out.push({k,html:frac(a,d),n:a})}
+  };
+  const cand=type==='toMixed'
+    ?[[w+1,r],[w,r+1],[w,r-1],[w-1,r],[r,w],[w,d-r],[w+1,d-r],[w+2,r],[w-2,r],[w-1,d-r]]
+    :[[n+1],[n-1],[w+r],[w*d],[n+d],[n-d],[w*d-r],[r*d+w],[n+2],[n-2]];
+  shuffle(cand);
+  for(const x of cand){if(out.length>=3)break;add(x[0],x[1])}
+  let g=0;while(out.length<3&&g++<100){type==='toMixed'?add(rnd(1,w+3),rnd(1,d-1)):add(n+rnd(-6,6))}
+  out.push({k:ansKey,html:type==='toMixed'?mixed(w,r,d):frac(n,d),w,r,n});
+  return shuffle(out);
+}
+const OPEN=['بیا مشتری رو راضی کنیم! 🍕','فکر کن، تو می‌تونی!','پیتزاها داغ داغن 🔥','یه سفارش جدید رسید!','با دقت حساب کن 😉','سرآشپز، آماده‌ای؟'];
+
+function nextQ(){
+  if(G.i>=G.total||(!G.isAdventure&&G.lives<=0)){finish();return}
+  if(G.isAdventure){
+    // Determine which of the 3 adventure stages we are in (0..2: stage 0, 3..5: stage 1, 6..9: stage 2)
+    G.advStageIdx = G.i < 3 ? 0 : G.i < 6 ? 1 : 2;
+    const st = ADV_STAGES[G.advStageIdx];
+    G.mode = st.mode;
+    G.diff = st.diff;
+  }
+  const c=DIFFS[G.diff];let q,t=0;
+  do{q=genQ(G.mode,c);t++}while(G.used.has(q.key)&&t<40);
+  G.used.add(q.key);G.q=q;G.answered=false;G.in={w:0,n:0};
+  renderQ(c);
+}
+
+function renderQ(c){
+  const q=G.q,m=q.type==='toMixed';
+  setMood($('#gMascot'),'normal');setBubble(pick(OPEN));updateHUD();
+  $('#pbar').style.width=(G.i/G.total*100)+'%';
+  const tk=$('#ticket');
+  tk.innerHTML=`<div class="tlabel">🧾 سفارش مشتری</div><div class="tq">${m?'این کسر را به <b>عدد مخلوط</b> تبدیل کن':'این عدد مخلوط را به <b>کسر</b> تبدیل کن'}</div><div class="big">${m?frac(q.n,q.d):mixed(q.w,q.r,q.d)}</div>`;
+  tk.classList.remove('pop');void tk.offsetWidth;tk.classList.add('pop');
+  $('#vis').innerHTML=c.vis?visHTML(q):'';
+  const hb=$('#hintbox');hb.classList.remove('show');hb.innerHTML='';
+  const hbtn=$('#hintBtn');hbtn.disabled=c.vis;hbtn.style.display=c.vis?'none':'';
+  const ans=$('#ans');ans.classList.remove('locked');
+  if(q.format==='choice'){
+    ans.innerHTML=`<div class="opts">${q.opts.map(o=>`<button class="opt" data-k="${o.k}">${o.html}</button>`).join('')}</div>`;
+    ans.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      if(G.answered)return;
+      const key=m?`${q.w}-${q.r}`:`${q.n}`,ok=b.dataset.k===key;
+      ans.querySelectorAll('.opt').forEach(x=>{if(x.dataset.k===key)x.classList.add('ok');else if(x===b)x.classList.add('no');else x.classList.add('dim')});
+      const chosen=q.opts.find(o=>o.k===b.dataset.k);
+      submit(ok,b,chosen);
+    });
+  }else renderInput(q);
+  window.scrollTo(0,0);$('#game').scrollTop=0;
+}
+
+function renderInput(q){
+  const m=q.type==='toMixed',ans=$('#ans');
+  ans.innerHTML=`<div class="builder ${m?'two':''}">
+    ${m?`<div class="bx" id="bw">${fa(0)}</div>`:''}
+    <div class="bf"><div class="bx" id="bn">${fa(0)}</div><div class="line"></div><div class="bx lock">${fa(q.d)}</div></div>
+    ${m?`<div class="ctrl"><button class="cb" data-t="w" data-v="-1">−</button><button class="cb" data-t="w" data-v="1">+</button></div>`:''}
+    <div class="ctrl">${m?'':`<button class="cb" data-t="n" data-v="-5">−۵</button>`}<button class="cb" data-t="n" data-v="-1">−</button><button class="cb" data-t="n" data-v="1">+</button>${m?'':`<button class="cb" data-t="n" data-v="5">+۵</button>`}</div>
+  </div>
+  <button class="btn big green center" id="chk">بررسی ✔</button>`;
+  ans.querySelectorAll('.cb').forEach(b=>b.onclick=()=>{
+    if(G.answered)return;
+    const t=b.dataset.t,v=+b.dataset.v,lim=t==='w'?20:(m?30:199);
+    G.in[t]=Math.max(0,Math.min(lim,G.in[t]+v));
+    const el=$(t==='w'?'#bw':'#bn');el.textContent=fa(G.in[t]);bump(el);sfx(v>0?'up':'down');
+  });
+  $('#chk').onclick=()=>{
+    if(G.answered)return;
+    const ok=m?(G.in.w===q.w&&G.in.n===q.r):(G.in.n===q.n);
+    ans.querySelector('.builder').style.opacity=.9;
+    submit(ok,$('#chk'),{w:G.in.w,r:G.in.n,n:G.in.n});
+  };
+}
+
+$('#hintBtn').onclick=()=>{
+  const q=G.q;if(!q||G.answered||q.hinted)return;
+  q.hinted=true;$('#vis').innerHTML=visHTML(q);
+  const hb=$('#hintbox');
+  hb.innerHTML=q.type==='toMixed'
+    ?`💡 تقسیم چکشی انجام بده: ببین چند بار <b class="c-d">${fa(q.d)}</b> داخل <b>${fa(q.n)}</b> جا می‌شود؛ خارج قسمت می‌شود <b class="c-w">عدد صحیح</b> و باقیمانده می‌شود <b class="c-n">صورت</b>!`
+    :`💡 فرمول تبدیل: <b class="c-w">عدد صحیح (${fa(q.w)})</b> را ضربدر <b class="c-d">مخرج (${fa(q.d)})</b> کن و به علاوه <b class="c-n">صورت (${fa(q.r)})</b> کن تا صورت جدید به دست بیاید!`;
+  hb.classList.add('show');$('#hintBtn').disabled=true;sfx('hint');setBubble('این هم یه کمک کوچولو 😉');
+};
+
+const PRAISE=['آفرین!','عالی بود!','ایول!','دمت گرم!','فوق‌العاده!','نابغه‌ای!','درست گفتی!'];
+
+function submit(ok,el,attempt){
+  if(G.answered)return;G.answered=true;
+  const q=G.q,[x,y]=centerOf(el);$('#ans').classList.add('locked');
+  const mKey=q.stageMode||G.mode;
+
+  if(ok){
+    G.correct++;G.combo++;G.maxCombo=Math.max(G.maxCombo,G.combo);
+    const pts=G.isAdventure
+      ?(q.hinted?80:100)
+      :Math.max(40,100+Math.min(G.combo-1,5)*20-(q.hinted?30:0));
+    G.score+=pts;
+
+    store.totalCorrect=(store.totalCorrect||0)+1;
+    store.modeSolved[mKey]=(store.modeSolved[mKey]||0)+1;
+    if(G.isAdventure){
+      G.stageCorrect[G.advStageIdx]++;
+      store.advScore=Math.min(MAX_ADV_SCORE,G.score);
+    }else if((store.modeErrors[mKey]||0)>0){
+      // Clean practice reduces recorded error count for that mode
+      store.modeErrors[mKey]=Math.max(0,store.modeErrors[mKey]-1);
+    }
+    save();
+
+    sfx('correct');if(G.combo>=3)setTimeout(()=>sfx('combo'),320);
+    burst(x,y,G.combo>=3?70:45);floatText('+'+fa(pts),x,y);vib(30);
+    setMood($('#gMascot'),'happy');anim($('#gMascot'),'jump');setBubble(pick(PRAISE)+' 🎉');
+  }else{
+    if(!G.isAdventure)G.lives--;
+    G.combo=0;
+    store.totalWrong=(store.totalWrong||0)+1;
+    store.modeErrors[mKey]=(store.modeErrors[mKey]||0)+1;
+
+    // Detailed skill error tracking for teacher report card
+    if(q.type==='toMixed'){
+      store.skillErrors.divToMixed=(store.skillErrors.divToMixed||0)+1;
+      if(attempt && attempt.w!==undefined && attempt.w!==q.w){
+        store.skillErrors.wholePart=(store.skillErrors.wholePart||0)+1;
+      }
+      if(attempt && attempt.r!==undefined && attempt.r!==q.r){
+        store.skillErrors.numPart=(store.skillErrors.numPart||0)+1;
+      }
+    }else{
+      store.skillErrors.multToImproper=(store.skillErrors.multToImproper||0)+1;
+      store.skillErrors.numPart=(store.skillErrors.numPart||0)+1;
+    }
+    save();
+
+    sfx('wrong');vib([60,40,60]);
+    setMood($('#gMascot'),'sad');anim($('#gMascot'),'shake');setBubble('نگران نباش، با هم از روی شکل یاد می‌گیریم! 💪');
+    const h=$('#hearts');h.classList.remove('hit');void h.offsetWidth;h.classList.add('hit');
+  }
+  $('#pbar').style.width=((G.i+1)/G.total*100)+'%';
+  updateHUD();
+  setTimeout(()=>showSheet(ok),ok?750:950);
+}
+
+function showSheet(ok){
+  const q=G.q,m=q.type==='toMixed',last=(G.i+1>=G.total)||(!G.isAdventure&&G.lives<=0);
+  const expr=m?`${cFrac(q.n,q.d,'c-n','c-d')}<span>=</span>${cMixed(q.w,q.r,q.d)}`:`${cMixed(q.w,q.r,q.d)}<span>=</span>${cFrac(q.n,q.d,'c-n','c-d')}`;
+
+  const visualExplain = m
+    ? `<div style="width:100%;display:flex;flex-direction:column;gap:8px;align-items:center">
+        ${renderLongDivisionSVG(q.n,q.d,q.w,q.r)}
+        <div class="role-grid">
+          <div class="role-item w"><span>خارج قسمت (${fa(q.w)})</span><b>⬅ عدد صحیح</b></div>
+          <div class="role-item n"><span>باقیمانده (${fa(q.r)})</span><b>⬅ صورت کسر</b></div>
+          <div class="role-item d"><span>مخرج (${fa(q.d)})</span><b>⬅ خودش می‌ماند</b></div>
+        </div>
+      </div>`
+    : `<div style="width:100%;display:flex;flex-direction:column;gap:8px;align-items:center">
+        ${renderMixedToImproperDiagram(q.w,q.r,q.d,q.n)}
+        <div style="font-size:.82rem;font-weight:900;color:#3b1d6b;background:#f3e8ff;padding:6px 10px;border-radius:12px;width:100%;text-align:center">
+          <span class="c-w">عدد صحیح</span> ضربدر <span class="c-d">مخرج</span> به علاوه <span class="c-n">صورت</span> می‌ره تو <b>صورت</b>، و <span class="c-d">مخرج</span> هم خودش می‌مونه!
+        </div>
+      </div>`;
+
+  const si=$('#sheetIn');si.className='sheet-in '+(ok?'good':'bad');
+  si.innerHTML=`<h3 class="sh-t">${ok?pick(PRAISE)+' 🎉':'بیا راه حل رنگی رو ببینیم! 💡'}</h3>
+    <div class="expr">${expr}</div>
+    ${ok?'':`${visualExplain}<div class="vis">${visHTML(q,.58)}</div>`}
+    <button class="btn big green center" id="nextBtn">${last?(G.isAdventure?'مشاهده کارنامه نهایی 🏁':'مشاهده نتیجه 🏆'):'ادامه ◀'}</button>`;
+  $('#shade').classList.add('show');$('#sheet').classList.add('show');sfx('whoosh');
+  $('#nextBtn').onclick=()=>{
+    $('#sheet').classList.remove('show');$('#shade').classList.remove('show');
+    G.i++;setTimeout(nextQ,250);
+  };
+}
+
+/* ================= result & full report card ================= */
+function finish(){
+  if(G.isAdventure){
+    // Compute stars per adventure stage
+    const s0 = G.stageCorrect[0]>=3?3:G.stageCorrect[0]>=2?2:1;
+    const s1 = G.stageCorrect[1]>=3?3:G.stageCorrect[1]>=2?2:1;
+    const s2 = G.stageCorrect[2]>=4?3:G.stageCorrect[2]>=2?2:1;
+    store.modeStars={toMixed:s0,toImproper:s1,mix:s2};
+    store.advScore=Math.min(MAX_ADV_SCORE,G.score);
+    store.advUnlocked=true;
+    save();
+    showReportCard();
+    return;
+  }
+
+  const stars=G.correct>=9?3:G.correct>=7?2:G.correct>=4?1:0;
+  const key=G.mode+'-'+G.diff;
+  if(stars>(store.stars[key]||0))store.stars[key]=stars;
+  if(G.score>(store.best[key]||0))store.best[key]=G.score;
+  if(stars>(store.modeStars[G.mode]||0))store.modeStars[G.mode]=stars;
+  save();
+
+  const student=store.studentName||'سرآشپز قهرمان';
+  const title=stars===3?`آفرین ${student}! استاد کسری شدی! 🏆`:stars===2?`عالی بود ${student}! 🎉`:stars===1?'خوب بود، ادامه بده! 👍':'این بار نشد، دوباره امتحان کن 💪';
+  const w=$('#resWrap');
+  w.innerHTML=`<div class="big-mascot" id="rMascot">${mascot()}</div>
+    <h2 class="title">${title}</h2>
+    <div class="stars" id="rStars"><span>⭐</span><span>⭐</span><span>⭐</span></div>
+    <div class="stats">
+      <div class="stat"><b>${fa(G.correct)}/${fa(G.total)}</b>جواب درست</div>
+      <div class="stat"><b>${fa(G.score)}</b>امتیاز</div>
+      <div class="stat"><b>${fa(G.maxCombo)}</b>بیشترین کمبو</div>
+    </div>
+    <p class="tag">${G.lives<=0?'قلب‌هات تموم شد 💔 ولی نترس، تمرین می‌کنی بهتر می‌شی!':`رکورد این سطح: ${fa(store.best[key]||0)} امتیاز`}</p>
+    <button class="btn big green center" id="again">🔁 دوباره بازی</button>
+    <div class="row">
+      <button class="btn yellow" id="goReport">🏁 کارنامه</button>
+      <button class="btn blue" id="chLv">🎚️ تغییر سطح</button>
+      <button class="btn purple" id="goHome">🏠 منو</button>
+    </div>`;
+  setMood($('#rMascot'),stars>=2?'happy':stars===1?'normal':'sad');
+  if(stars>=2)anim($('#rMascot'),'jump');
+  $('#again').onclick=()=>startGame(G.mode,G.diff,false);
+  $('#goReport').onclick=()=>showReportCard();
+  $('#chLv').onclick=()=>openLevels(G.mode);
+  $('#goHome').onclick=()=>{renderHome();show('home')};
+  show('result');
+  setTimeout(()=>{sfx(stars>0?'win':'lose');if(stars>0){rain(stars*35+30);burst(W/2,H*.3,60,12)}},300);
+  const sp=[...document.querySelectorAll('#rStars span')];
+  for(let i=0;i<stars;i++)setTimeout(()=>{sp[i].classList.add('on');sfx('star');const[x,y]=centerOf(sp[i]);burst(x,y,25,6)},900+i*600);
+}
+
+/* ================= COMPREHENSIVE REPORT CARD (کارنامه نهایی) ================= */
+function showReportCard(){
+  $('#sheet').classList.remove('show');$('#shade').classList.remove('show');closeModal();
+  const nm=$('#inpName').value.trim();
+  if(nm){store.studentName=nm;save();}
+  const student=store.studentName||'سرآشپز قهرمان';
+
+  const totalAtt=(store.totalCorrect||0)+(store.totalWrong||0);
+  const acc=totalAtt>0?Math.round((store.totalCorrect/totalAtt)*100):100;
+  const finalScore=Math.min(MAX_ADV_SCORE,store.advScore||0);
+  const totalStars=Math.min(MAX_ADV_STARS,(store.modeStars.toMixed||0)+(store.modeStars.toImproper||0)+(store.modeStars.mix||0));
+
+  let rank='👑 سرآشپز بزرگ پیتزا کسری';
+  if(totalAtt===0)rank='🌱 کمک‌آشپز تازه‌کار';
+  else if(finalScore>=850 && acc>=85)rank='👑 سرآشپز بزرگ پیتزا کسری';
+  else if(finalScore>=650 || acc>=70)rank='🏆 آشپز ماهر کسر و عدد مخلوط';
+  else rank='⭐ آشپز پرتلاش ریاضی';
+
+  const todayFa=new Date().toLocaleDateString('fa-IR');
+  const weak=getWeakModes();
+  const sk=store.skillErrors||{divToMixed:0,multToImproper:0,wholePart:0,numPart:0};
+
+  let recHTML='';
+  if(totalAtt>0){
+    if(weak.length>0){
+      const names=weak.map(m=>`«${MODES[m]}»`).join(' و ');
+      recHTML=`<div class="rec-banner warn">💡 پیشنهاد تمرین بیشتر: بخش ${names} در صفحه اصلی باز شده است تا بیشتر تمرین کنی!</div>`;
+    }else{
+      recHTML=`<div class="rec-banner ok">🌟 فوق‌العاده! تمام سفارش‌ها را بدون خطا آماده کردی و همه بخش‌های تمرینی برایت باز شدند!</div>`;
+    }
+  }
+
+  sfx('win');rain(55);
+
+  const modeMeta=[
+    {k:'toMixed',   ic:'🍕', title:'کسر ← عدد مخلوط'},
+    {k:'toImproper',ic:'🥡', title:'عدد مخلوط ← کسر'},
+    {k:'mix',       ic:'🎲', title:'چالش ترکیبی سرآشپز'}
+  ];
+
+  $('#reportWrap').innerHTML=`
+    <div class="report-frame">
+      <!-- Center-aligned Header -->
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;border-bottom:2px solid #e9d5ff;padding-bottom:8px">
+        <div style="width:68px;height:76px">${mascot()}</div>
+        <div style="font-size:.72rem;font-weight:900;color:#d97706;margin-top:2px">📜 گواهی رسمی آشپزخانه ریاضی</div>
+        <h2 style="margin:2px 0;font-size:1.2rem;font-weight:900;color:#2e1065">کارنامه پیتزا کسری</h2>
+        <div style="font-size:.82rem;font-weight:900;color:#e11d48">${rank}</div>
+        <div style="font-size:.74rem;font-weight:900;color:#581c87;margin-top:3px">✨ طراحی شده توسط آموزگار زمانی ✨</div>
+      </div>
+
+      <!-- Student Name & Date -->
+      <div style="background:#f3e8ff;border-radius:12px;padding:6px 12px;display:flex;justify-content:space-between;align-items:center;font-size:.8rem;font-weight:900">
+        <span>👤 دانش‌آموز: <b style="color:#3b0764;font-size:.9rem">${student}</b></span>
+        <span>📅 ${todayFa}</span>
+      </div>
+
+      <!-- Score out of 1000 & Stars out of 9 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:center">
+        <div style="background:linear-gradient(180deg,#fde047,#f59e0b);color:#451a03;border-radius:16px;padding:8px 6px">
+          <div style="font-size:.7rem;font-weight:900">امتیاز ماجراجویی کامل</div>
+          <div style="font-size:1.25rem;font-weight:900">${fa(finalScore)} از ${fa(MAX_ADV_SCORE)}</div>
+        </div>
+        <div style="background:linear-gradient(180deg,#6d28d9,#3b0764);color:#fff;border-radius:16px;padding:8px 6px">
+          <div style="font-size:.7rem;font-weight:900;color:#ddd6fe">ستاره‌های کسب‌شده</div>
+          <div style="font-size:1.25rem;font-weight:900;color:#fde047">⭐ ${fa(totalStars)} از ${fa(MAX_ADV_STARS)}</div>
+        </div>
+      </div>
+
+      <!-- Accuracy Grid -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center;font-weight:900">
+        <div style="background:#ecfdf5;border:1.5px solid #6ee7b7;color:#065f46;border-radius:12px;padding:5px">
+          <div style="font-size:.95rem">${fa(store.totalCorrect||0)}</div>
+          <div style="font-size:.66rem">✅ پاسخ درست</div>
+        </div>
+        <div style="background:#fff1f2;border:1.5px solid #fda4af;color:#9f1239;border-radius:12px;padding:5px">
+          <div style="font-size:.95rem">${fa(store.totalWrong||0)}</div>
+          <div style="font-size:.66rem">❌ کل خطاها</div>
+        </div>
+        <div style="background:#f0f9ff;border:1.5px solid #7dd3fc;color:#075985;border-radius:12px;padding:5px">
+          <div style="font-size:.95rem">${fa(acc)}٪</div>
+          <div style="font-size:.66rem">🎯 درصد دقت</div>
+        </div>
+      </div>
+
+      <!-- Per-Mode Breakdown -->
+      <div style="background:#fff;border-radius:14px;padding:8px 10px;border:1.5px solid #e9d5ff">
+        <div style="font-size:.75rem;font-weight:900;color:#581c87;text-align:center;margin-bottom:4px">📊 عملکرد به تفکیک هر مبحث</div>
+        ${modeMeta.map(m=>{
+          const solved=store.modeSolved[m.k]||0;
+          const errs=store.modeErrors[m.k]||0;
+          const st=store.modeStars[m.k]||0;
+          const active=solved>0||errs>0;
+          return `<div class="report-row">
+            <span>${m.ic} ${m.title}</span>
+            <span style="display:flex;align-items:center;gap:6px">
+              ${active?`
+                <span style="color:#581c87">${fa(solved)} سفارش</span>
+                <span style="color:#d97706">⭐${fa(st)}</span>
+                <span class="badge-err ${errs>0?'bad':'ok'}">${errs>0?`❌ ${fa(errs)} خطا`:'✅ بدون خطا'}</span>
+              `:'<span style="color:#94a3b8">انجام نشده</span>'}
+            </span>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <!-- Skill Error Breakdown -->
+      <div style="background:#fff1f2;border-radius:14px;padding:8px 10px;border:1.5px solid #fecdd3">
+        <div style="font-size:.75rem;font-weight:900;color:#881337;text-align:center;margin-bottom:5px">🔍 جدول خطاها در مراحل تبدیل</div>
+        ${(store.totalWrong||0)===0?`
+          <div style="font-size:.78rem;font-weight:900;color:#047857;text-align:center">🌟 تمام تبدیل‌ها بدون خطا انجام شده است.</div>
+        `:`
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;font-size:.72rem;font-weight:800">
+            <div style="background:#fff;border-radius:8px;padding:4px 7px;display:flex;justify-content:space-between;border:1px solid #ffe4e6">
+              <span>🍕 کسر به مخلوط (تقسیم):</span>
+              <b style="color:${sk.divToMixed>0?'#e11d48':'#059669'}">${sk.divToMixed>0?fa(sk.divToMixed)+' خطا':'۰'}</b>
+            </div>
+            <div style="background:#fff;border-radius:8px;padding:4px 7px;display:flex;justify-content:space-between;border:1px solid #ffe4e6">
+              <span>🥡 مخلوط به کسر (× و +):</span>
+              <b style="color:${sk.multToImproper>0?'#e11d48':'#059669'}">${sk.multToImproper>0?fa(sk.multToImproper)+' خطا':'۰'}</b>
+            </div>
+            <div style="background:#fff;border-radius:8px;padding:4px 7px;display:flex;justify-content:space-between;border:1px solid #ffe4e6">
+              <span>🟢 تشخیص عدد صحیح:</span>
+              <b style="color:${sk.wholePart>0?'#e11d48':'#059669'}">${sk.wholePart>0?fa(sk.wholePart)+' خطا':'۰'}</b>
+            </div>
+            <div style="background:#fff;border-radius:8px;padding:4px 7px;display:flex;justify-content:space-between;border:1px solid #ffe4e6">
+              <span>🔴 محاسبه صورت کسر:</span>
+              <b style="color:${sk.numPart>0?'#e11d48':'#059669'}">${sk.numPart>0?fa(sk.numPart)+' خطا':'۰'}</b>
+            </div>
+          </div>
+        `}
+      </div>
+
+      ${recHTML}
+
+      <div style="background:#fef3c7;border:2px dashed #f59e0b;color:#78350f;border-radius:12px;padding:6px;text-align:center;font-size:.78rem;font-weight:900">
+        📸 از این صفحه اسکرین‌شات بگیر و برای آموزگار زمانی بفرست!
+      </div>
+    </div>
+
+    <div class="row" style="width:100%">
+      <button class="btn yellow" id="repPracticeBtn">🎯 تمرین بخش‌ها</button>
+      <button class="btn green" id="repAdvBtn">🔄 ماجراجویی جدید</button>
+    </div>
+  `;
+
+  $('#repPracticeBtn').onclick=()=>{store.advUnlocked=true;save();renderHome();show('home')};
+  $('#repAdvBtn').onclick=()=>startFullAdventure();
+  show('report');
+}
+
+/* ================= exit / attractive color-coded help ================= */
+$('#gExit').onclick=()=>openModal('<h2>از بازی خارج می‌شی؟ 🤔</h2><p style="margin:0;font-weight:700">امتیازهایی که تا الان گرفتی در کارنامه ذخیره شده‌اند.</p>',
+  [{t:'ادامه بازی',c:'green'},{t:'صفحه اصلی',c:'pink',f:()=>{$('#sheet').classList.remove('show');$('#shade').classList.remove('show');renderHome();show('home')}}]);
+
+$('#helpBtn').onclick=()=>{
+  openModal(`
+    <h2>📘 آموزش سریع و رنگی سرآشپز</h2>
+
+    <!-- 1. کسر به عدد مخلوط (با تقسیم چکشی کامل و رنگی) -->
+    <div class="tut-card improper-box">
+      <div class="tut-head pink">🍕 ۱. تبدیل کسر به عدد مخلوط (با تقسیم چکشی)</div>
+      <div style="font-size:.84rem;font-weight:800;color:#4c1d95">
+        وقتی صورت از مخرج بزرگ‌تر است (مثل ${cFrac(7,3,'c-n','c-d')})، صورت را بر مخرج <b>تقسیم چکشی</b> می‌کنیم:
+      </div>
+
+      ${renderLongDivisionSVG(7, 3, 2, 1)}
+
+      <div class="role-grid">
+        <div class="role-item w">
+          <span>خارج قسمت (${fa(2)})</span>
+          <b>⬅ عدد صحیح</b>
+        </div>
+        <div class="role-item n">
+          <span>باقیمانده (${fa(1)})</span>
+          <b>⬅ می‌ره صورت</b>
+        </div>
+        <div class="role-item d">
+          <span>مخرج (${fa(3)})</span>
+          <b>⬅ خودش می‌مونه</b>
+        </div>
+      </div>
+
+      <div style="background:#fff;border-radius:14px;padding:6px 16px;border:2px solid #fda4af;display:flex;align-items:center;gap:12px;font-size:1.65rem;font-weight:900;direction:ltr">
+        ${cFrac(7,3,'c-n','c-d')}
+        <span style="color:#64748b">=</span>
+        ${cMixed(2,1,3)}
+      </div>
+    </div>
+
+    <!-- 2. عدد مخلوط به کسر (با رنگ‌بندی مجزا) -->
+    <div class="tut-card mixed-box">
+      <div class="tut-head blue">🥡 ۲. تبدیل عدد مخلوط به کسر</div>
+      <div style="font-size:.84rem;font-weight:800;color:#1e3a8a;line-height:1.7">
+        برای تبدیل ${cMixed(2,1,3)} به کسر:<br>
+        <span class="bg-w">عدد صحیح</span> ضربدر <span class="bg-d">مخرج</span> به علاوه <span class="bg-n">صورت</span> می‌ره توی <b>صورت</b>، و <span class="bg-d">مخرج</span> هم که خودش می‌مونه!
+      </div>
+
+      ${renderMixedToImproperDiagram(2, 1, 3, 7)}
+    </div>
+  `,
+  [{t:'فهمیدم! بزن بریم 🚀',c:'green'}]);
+};
+
+renderHome();
+})();
+</script>
+</body>
+</html>
